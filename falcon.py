@@ -1,145 +1,85 @@
-# ==========================
-# Imports
-# ==========================
 import os
 from dotenv import load_dotenv
-from typing import TypedDict, List
-from langchain.schema import HumanMessage, AIMessage
 from langgraph.graph import StateGraph, END
-from langchain_huggingface import HuggingFaceEndpoint
-from langchain.tools import tool
+from langchain.chat_models import ChatOpenAI
+from langchain.schema import HumanMessage, AIMessage
 import wikipedia
-from datetime import datetime
-import re
 
-# ==========================
-# Load API Key
-# ==========================
+# =========================
+# Load environment variables
+# =========================
 load_dotenv()
-HF_API_KEY = os.getenv("HUGGINGFACEHUB_API_TOKEN")
-if not HF_API_KEY:
-    raise ValueError("⚠️ Please set HUGGINGFACEHUB_API_TOKEN in your .env file")
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+if not OPENAI_API_KEY:
+    raise ValueError("⚠️ Please set your OPENAI_API_KEY in the environment or .env file")
 
-# ==========================
-# Initialize LLM
-# ==========================
-llm = HuggingFaceEndpoint(
-    repo_id="tiiuae/falcon-7b-instruct",
-    huggingfacehub_api_token=HF_API_KEY,
-    task="conversational",
-    max_new_tokens=512,
-    temperature=0.7
-)
+# =========================
+# Initialize OpenAI LLM
+# =========================
+llm = ChatOpenAI(model_name="gpt-3.5-turbo", openai_api_key=OPENAI_API_KEY)
 
-# ==========================
-# Define Agent State
-# ==========================
-class AgentState(TypedDict):
-    input: str
-    chat_history: List[HumanMessage]
+# =========================
+# Initial chatbot state
+# =========================
+def get_initial_state():
+    return {"messages": []}
 
-# ==========================
-# Tools
-# ==========================
-@tool
-def calculator(expression: str) -> str:
-    """Evaluate a math expression and return the result."""
-    try:
-        return str(eval(expression))
-    except:
-        return "Cannot calculate that."
-
-@tool
+# =========================
+# Wikipedia search tool
+# =========================
 def wiki_search(query: str) -> str:
-    """Search Wikipedia and return a short summary (2 sentences)."""
     try:
         return wikipedia.summary(query, sentences=2)
-    except:
-        return "No results found on Wikipedia."
+    except Exception:
+        return "No relevant information found on Wikipedia."
 
-@tool
-def get_datetime(_: str = "") -> str:
-    """Return the current date and time in YYYY-MM-DD HH:MM:SS format."""
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-
-# ==========================
-# Clarifier Node
-# ==========================
-def clarifier_node(state: AgentState):
-    """Ask for clarification if input is empty."""
-    if not state["input"].strip():
-        reply = "Can you please clarify your question?"
-        state.setdefault("chat_history", []).append(AIMessage(content=reply))
-    return state
-
-# ==========================
-# Responder Node (Smart Auto-Tool)
-# ==========================
-def responder_node(state: AgentState):
+# =========================
+# Chatbot logic
+# =========================
+def chatbot_node(state):
     user_input = state["input"].strip()
-    messages = state.get("chat_history", [])
+    messages = state["messages"]
 
-    # ---- Calculator Detection ----
-    if re.match(r"^[0-9\s\+\-\*\/\(\)\.]+$", user_input):
-        reply = f"Calculator result: {calculator.invoke(user_input)}"
+    # Add user message to conversation history
+    messages.append(HumanMessage(content=user_input))
 
-    # ---- Date & Time Detection ----
-    elif any(keyword in user_input.lower() for keyword in ["time", "date", "day", "current time"]):
-        reply = f"Current date & time: {get_datetime.invoke('')}"
+    # Get AI response
+    response = llm(messages)
+    response_text = response.content
 
-    # ---- Smart Wikipedia Detection ----
-    elif any(keyword in user_input.lower() for keyword in ["who", "what", "when", "where", "define", "meaning of"]):
-        wiki_result = wiki_search.invoke(user_input)
-        if wiki_result != "No results found on Wikipedia.":
-            reply = f"Wikipedia: {wiki_result}"
-        else:
-            # Fallback to LLM if Wikipedia fails
-            llm_response = llm.invoke(messages + [HumanMessage(content=user_input)])
-            reply = llm_response.content
+    # If AI response is vague or not factual, try Wikipedia
+    # (Simple heuristic: check for phrases like "I’m not sure", "I don't know")
+    if any(phrase in response_text.lower() for phrase in ["i'm not sure", "i do not know", "i don't know", "cannot find"]):
+        wiki_result = wiki_search(user_input)
+        response_text += f"\n\nWikipedia info: {wiki_result}"
 
-    # ---- Default LLM ----
-    else:
-        llm_response = llm.invoke(messages + [HumanMessage(content=user_input)])
-        reply = llm_response.content
+    # Save AI response to conversation history
+    messages.append(AIMessage(content=response_text))
+    return {"messages": messages, "output": response_text}
 
-    # Save assistant response
-    messages.append(AIMessage(content=reply))
-    state["chat_history"] = messages
-    return state
+# =========================
+# Build LangGraph workflow
+# =========================
+graph = StateGraph(dict)
+graph.add_node("chatbot", chatbot_node)
+graph.set_entry_point("chatbot")
+graph.add_edge("chatbot", END)
+app = graph.compile()
 
-# ==========================
-# Build LangGraph Workflow
-# ==========================
-workflow = StateGraph(AgentState)
-workflow.add_node("clarifier", clarifier_node)
-workflow.add_node("responder", responder_node)
-workflow.set_entry_point("clarifier")
-workflow.add_edge("clarifier", "responder")
-workflow.add_edge("responder", END)
-app = workflow.compile()
+# =========================
+# Chat loop
+# =========================
+print("Smart Q&A Chatbot with Wikipedia is ready! (type 'exit' to quit)\n")
+state = get_initial_state()
 
-# ==========================
-# Chat Function
-# ==========================
-chat_history: List[HumanMessage] = []
+while True:
+    user_input = input("You: ").strip()
+    if user_input.lower() in ["exit", "quit"]:
+        print("Chatbot: Goodbye! 👋")
+        break
 
-def chat_with_agent(user_input: str):
-    global chat_history
-    state = {"input": user_input, "chat_history": chat_history}
-    result = app.invoke(state)
-    last_msg = result["chat_history"][-1]
-    print("AI:", last_msg.content)
-    chat_history = result["chat_history"]
+    state["input"] = user_input
+    response = app.invoke(state)
+    print("Chatbot:", response["output"])
 
-# ==========================
-# Run Chatbot
-# ==========================
-if __name__ == "__main__":
-    print("Smart Falcon-7B-Instruct Chatbot is ready! Type 'exit' to quit.\n")
-    while True:
-        user_input = input("You: ")
-        if user_input.lower() == "exit":
-            print("Goodbye!")
-            break
-        chat_with_agent(user_input)
 
