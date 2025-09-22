@@ -21,7 +21,7 @@ get_ipython().system('pip install -U langgraph')
 
 
 import os
-os.environ["GEMINI_API_KEY"] = "AIzaSyDA2cALGOfioPvkmdHcESCaHNDZ8QK3yzM"  
+os.environ["GEMINI_API_KEY"] = "GEMINI_API_KEY"  
 
 
 # In[11]:
@@ -288,7 +288,7 @@ get_ipython().system('pip install --upgrade google-genai')
 
 import os
 from google import genai
-os.environ["GENAI_API_KEY"] = "AIzaSyDA2cALGOfioPvkmdHcESCaHNDZ8QK3yzM"
+os.environ["GENAI_API_KEY"] = "GENAI_API_KEY"
 
 client = genai.Client()
 
