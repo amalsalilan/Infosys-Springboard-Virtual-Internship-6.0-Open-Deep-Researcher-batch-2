@@ -1,4 +1,3 @@
-# chatbot_graph.py
 
 from typing import List, TypedDict
 from langchain_core.messages import BaseMessage
@@ -13,7 +12,7 @@ class ConversationState(TypedDict):
     # A potential question to ask the user for clarification
     follow_up_question: str
 
-# --- Graph Nodes ---
+# Graph Nodes ---
 
 def check_clarity_node(state: ConversationState):
     """
@@ -34,7 +33,7 @@ def generate_response_node(state: ConversationState):
     updated_messages = state["messages"] + [response]
     return {"messages": updated_messages}
 
-# --- Graph Edges ---
+# Graph Edges
 
 def decide_next_step(state: ConversationState):
     """
@@ -48,7 +47,7 @@ def decide_next_step(state: ConversationState):
         print("ROUTE: Input is clear. Proceeding to generate a response.")
         return "generate_response"
 
-# --- Graph Builder ---
+# Graph Builder
 
 def create_chatbot_workflow():
     """

@@ -1,4 +1,3 @@
-# main_app.py
 
 import os
 from dotenv import load_dotenv
@@ -28,10 +27,8 @@ def run_chat_session():
                 print("👋 Bot session terminated. Goodbye!")
                 break
 
-            # Append the new user message to the current history for this turn
             current_turn_messages = memory.get_history() + [HumanMessage(content=user_text)]
-            
-            # Prepare the input state for the graph
+        
             graph_input = {
                 "messages": current_turn_messages,
             }
@@ -39,7 +36,6 @@ def run_chat_session():
             # Execute the graph
             result_state = chatbot_app.invoke(graph_input)
 
-            # Process the graph's final state
             if result_state.get("follow_up_question"):
                 # If the graph ended by producing a clarifying question
                 question_to_ask = result_state["follow_up_question"]
