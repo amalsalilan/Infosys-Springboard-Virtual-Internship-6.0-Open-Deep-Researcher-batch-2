@@ -1,5 +1,4 @@
-langgraph>=0.1.0
-langchain>=0.2.0
-openai
+langgraph
+langchain-openai
+langchain
 python-dotenv
-rich

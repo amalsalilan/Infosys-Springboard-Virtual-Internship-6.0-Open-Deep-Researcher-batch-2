@@ -1,18 +1,24 @@
-from typing import List, Dict
+# memory_store.py
 
-class SessionMemory:
-    """Simple in-memory session storage for a single CLI session."""
+from typing import List
+from langchain_core.messages import BaseMessage
+
+class ConversationHistory:
+    """
+    Manages the session's chat history in a simple list.
+    This object stores the sequence of messages to provide conversational context.
+    """
     def __init__(self):
-        self.messages: List[Dict[str, str]] = []
+        self._messages: List[BaseMessage] = []
 
-    def add_user(self, text: str):
-        self.messages.append({"role": "user", "text": text})
+    def log_message(self, message: BaseMessage):
+        """Adds a new message to the end of the conversation log."""
+        self._messages.append(message)
 
-    def add_assistant(self, text: str):
-        self.messages.append({"role": "assistant", "text": text})
+    def get_history(self) -> List[BaseMessage]:
+        """Retrieves the entire list of messages exchanged so far."""
+        return self._messages
 
-    def get_messages(self):
-        return self.messages
-
-    def clear(self):
-        self.messages = []
+    def reset(self):
+        """Clears all messages from the history for a new session."""
+        self._messages = []

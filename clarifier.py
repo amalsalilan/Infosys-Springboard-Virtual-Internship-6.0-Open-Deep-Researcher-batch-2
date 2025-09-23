@@ -1,39 +1,49 @@
-from langchain.chat_models import ChatOpenAI
-from langchain.schema import HumanMessage, SystemMessage
-from typing import Dict
+# query_clarifier.py
 
-class Clarifier:
-    """Uses an LLM to decide whether clarification is needed and to generate a clarifying question."""
+from typing import List
+from langchain_core.messages import BaseMessage
+from langchain_google_genai import ChatGoogleGenerativeAI
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_core.output_parsers import StrOutputParser
 
-    def __init__(self, openai_api_key: str, model_name: str = "gpt-4o-mini"):
-        self.llm = ChatOpenAI(model_name=model_name, openai_api_key=openai_api_key, temperature=0.0)
+def analyze_user_intent(message_history: List[BaseMessage]) -> str:
+    """
+    Analyzes the latest user message for ambiguity based on conversational context.
 
-    def need_clarification(self, user_message: str, context: str = None) -> Dict[str, str]:
-        prompt = [
-            SystemMessage(content=(
-                "You are an assistant that decides whether a user's query is ambiguous and, if so, write a single concise clarifying question."
-            )),
-            HumanMessage(content=(
-                f"Context: {context}\nUser: {user_message}\n\n" 
-                "Answer with a JSON object with two keys:\n- need: true or false\n- question: if need is true, write the concise clarifying question, otherwise an empty string."
-            ))
-        ]
+    Returns:
+        An empty string if the intent is clear, or a clarifying question if it's not.
+    """
+    # Initialize the Gemini model for the analysis task
+    analyzer_llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
 
-        resp = self.llm.generate_messages(prompt)
-        text = resp[0].content if isinstance(resp, list) else resp.content
+    # This prompt guides the AI to act as a clarity expert
+    system_prompt = """
+    You are a helpful assistant who analyzes user queries for clarity.
+    Review the full conversation history provided. Based on this context, determine if the LATEST user message is specific enough to be answered.
 
-        import json, re
-        m = re.search(r"\{[\s\S]*\}", text)
-        if m:
-            try:
-                obj = json.loads(m.group(0))
-                return {"need": bool(obj.get("need")), "question": obj.get("question", "").strip()}
-            except Exception:
-                pass
+    - If the user's latest message is clear, respond with only the word: CLEAR
+    - If the message is ambiguous or needs more detail, formulate a concise question to ask the user.
 
-        lower = user_message.strip().lower()
-        pronouns = ["it", "this", "that", "they", "them"]
-        if len(lower.split()) <= 4 or any(p in lower.split() for p in pronouns):
-            return {"need": True, "question": "Could you clarify what you mean by that?"}
+    Example History:
+    [Human: "Find cafes in Chennai.", AI: "What kind of cafes are you looking for?", Human: "Ones with good wifi."]
+    Your Response: CLEAR
 
-        return {"need": False, "question": ""}
+    Example History:
+    [Human: "Tell me about it."]
+    Your Response: "Could you please specify what 'it' you are referring to?"
+    """
+
+    prompt = ChatPromptTemplate.from_messages([
+        ("system", system_prompt),
+        *message_history,
+    ])
+
+    # Create and invoke the analysis chain
+    clarity_chain = prompt | analyzer_llm | StrOutputParser()
+    analysis_result = clarity_chain.invoke({})
+
+    # Return the clarifying question only if the intent is not clear
+    if "CLEAR" in analysis_result.upper():
+        return ""
+    else:
+        return analysis_result
