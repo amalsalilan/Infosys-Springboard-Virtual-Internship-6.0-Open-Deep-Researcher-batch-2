@@ -395,7 +395,27 @@ else:
     print("Brief not generated: some fields may still be missing")
 
 
-# In[ ]:
+# In[38]:
+
+
+def get_user_input():
+    fields = {}
+    fields["topic"] = input("Enter the research topic: ")
+    fields["objective"] = input("Enter the objective (e.g., summary, recommendations): ")
+    fields["audience"] = input("Enter the audience (e.g., doctors, policymakers): ")
+    fields["timeframe"] = input("Enter the timeframe (optional): ")
+    fields["depth"] = input("Enter the depth (summary / detailed report): ")
+    fields["deliverable"] = input("Enter the deliverable (brief, slides, etc.): ")
+    fields["constraints"] = input("Enter constraints (if any): ")
+    fields["notes"] = input("Enter any notes (optional): ")
+    return fields
+
+
+user_fields = get_user_input()
+structured_brief = create_structured_brief(user_fields)
+print("\nGenerated Research Brief:\n")
+print(structured_brief["markdown"])
+
 
 
 
