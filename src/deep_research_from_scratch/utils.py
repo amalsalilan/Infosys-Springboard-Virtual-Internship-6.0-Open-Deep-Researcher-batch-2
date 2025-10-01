@@ -13,7 +13,7 @@ from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool, InjectedToolArg
-from tavily import TavilyClient
+from tavily import AsyncTavilyClient
 
 from deep_research_from_scratch.state_research import Summary
 from deep_research_from_scratch.prompts import summarize_webpage_prompt
@@ -39,16 +39,17 @@ def get_current_dir() -> Path:
 
 # ===== CONFIGURATION =====
 
-summarization_model = init_chat_model(model="openai:gpt-4.1-mini")
-tavily_client = TavilyClient()
+# Primary: Google Gemini | Alternatives: "openai:gpt-4.1-mini", "anthropic:claude-haiku-3-5-20241022"
+summarization_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")
+tavily_client = AsyncTavilyClient()
 
 # ===== SEARCH FUNCTIONS =====
 
-def tavily_search_multiple(
-    search_queries: List[str], 
-    max_results: int = 3, 
-    topic: Literal["general", "news", "finance"] = "general", 
-    include_raw_content: bool = True, 
+async def tavily_search_multiple(
+    search_queries: List[str],
+    max_results: int = 3,
+    topic: Literal["general", "news", "finance"] = "general",
+    include_raw_content: bool = True,
 ) -> List[dict]:
     """Perform search using Tavily API for multiple queries.
 
@@ -62,10 +63,10 @@ def tavily_search_multiple(
         List of search result dictionaries
     """
 
-    # Execute searches sequentially. Note: yon can use AsyncTavilyClient to parallelize this step.
+    # Execute searches sequentially using async client
     search_docs = []
     for query in search_queries:
-        result = tavily_client.search(
+        result = await tavily_client.search(
             query,
             max_results=max_results,
             include_raw_content=include_raw_content,
@@ -75,7 +76,7 @@ def tavily_search_multiple(
 
     return search_docs
 
-def summarize_webpage_content(webpage_content: str) -> str:
+async def summarize_webpage_content(webpage_content: str) -> str:
     """Summarize webpage content using the configured summarization model.
 
     Args:
@@ -89,9 +90,9 @@ def summarize_webpage_content(webpage_content: str) -> str:
         structured_model = summarization_model.with_structured_output(Summary)
 
         # Generate summary
-        summary = structured_model.invoke([
+        summary = await structured_model.ainvoke([
             HumanMessage(content=summarize_webpage_prompt.format(
-                webpage_content=webpage_content, 
+                webpage_content=webpage_content,
                 date=get_today_str()
             ))
         ])
@@ -127,7 +128,7 @@ def deduplicate_search_results(search_results: List[dict]) -> dict:
 
     return unique_results
 
-def process_search_results(unique_results: dict) -> dict:
+async def process_search_results(unique_results: dict) -> dict:
     """Process search results by summarizing content where available.
 
     Args:
@@ -144,7 +145,7 @@ def process_search_results(unique_results: dict) -> dict:
             content = result['content']
         else:
             # Summarize raw content for better processing
-            content = summarize_webpage_content(result['raw_content'])
+            content = await summarize_webpage_content(result['raw_content'])
 
         summarized_results[url] = {
             'title': result['title'],
@@ -178,7 +179,7 @@ def format_search_output(summarized_results: dict) -> str:
 # ===== RESEARCH TOOLS =====
 
 @tool(parse_docstring=True)
-def tavily_search(
+async def tavily_search(
     query: str,
     max_results: Annotated[int, InjectedToolArg] = 3,
     topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
@@ -194,7 +195,7 @@ def tavily_search(
         Formatted string of search results with summaries
     """
     # Execute search for single query
-    search_results = tavily_search_multiple(
+    search_results = await tavily_search_multiple(
         [query],  # Convert single query to list for the internal function
         max_results=max_results,
         topic=topic,
@@ -205,7 +206,7 @@ def tavily_search(
     unique_results = deduplicate_search_results(search_results)
 
     # Process results with summarization
-    summarized_results = process_search_results(unique_results)
+    summarized_results = await process_search_results(unique_results)
 
     # Format output for consumption
     return format_search_output(summarized_results)

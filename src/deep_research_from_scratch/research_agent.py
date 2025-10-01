@@ -22,15 +22,15 @@ from deep_research_from_scratch.prompts import research_agent_prompt, compress_r
 tools = [tavily_search, think_tool]
 tools_by_name = {tool.name: tool for tool in tools}
 
-# Initialize models
-model = init_chat_model(model="anthropic:claude-sonnet-4-20250514")
+# Initialize models - Primary: Google Gemini | Alternatives: OpenAI, Anthropic
+model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
 model_with_tools = model.bind_tools(tools)
-summarization_model = init_chat_model(model="openai:gpt-4.1-mini")
-compress_model = init_chat_model(model="openai:gpt-4.1", max_tokens=32000) # model="anthropic:claude-sonnet-4-20250514", max_tokens=64000
+summarization_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")  # Alternatives: "openai:gpt-4.1-mini", "anthropic:claude-haiku-3-5-20241022"
+compress_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai", max_tokens=32000)  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
 
 # ===== AGENT NODES =====
 
-def llm_call(state: ResearcherState):
+async def llm_call(state: ResearcherState):
     """Analyze current state and decide on next actions.
 
     The model analyzes the current conversation state and decides whether to:
@@ -41,13 +41,13 @@ def llm_call(state: ResearcherState):
     """
     return {
         "researcher_messages": [
-            model_with_tools.invoke(
+            await model_with_tools.ainvoke(
                 [SystemMessage(content=research_agent_prompt)] + state["researcher_messages"]
             )
         ]
     }
 
-def tool_node(state: ResearcherState):
+async def tool_node(state: ResearcherState):
     """Execute all tool calls from the previous LLM response.
 
     Executes all tool calls from the previous LLM responses.
@@ -59,7 +59,13 @@ def tool_node(state: ResearcherState):
     observations = []
     for tool_call in tool_calls:
         tool = tools_by_name[tool_call["name"]]
-        observations.append(tool.invoke(tool_call["args"]))
+        # Use ainvoke for async tools, invoke for sync tools
+        if tool_call["name"] == "think_tool":
+            # think_tool is synchronous
+            observations.append(tool.invoke(tool_call["args"]))
+        else:
+            # tavily_search is now async
+            observations.append(await tool.ainvoke(tool_call["args"]))
 
     # Create tool message outputs
     tool_outputs = [
@@ -72,7 +78,7 @@ def tool_node(state: ResearcherState):
 
     return {"researcher_messages": tool_outputs}
 
-def compress_research(state: ResearcherState) -> dict:
+async def compress_research(state: ResearcherState) -> dict:
     """Compress research findings into a concise summary.
 
     Takes all the research messages and tool outputs and creates
@@ -81,12 +87,12 @@ def compress_research(state: ResearcherState) -> dict:
 
     system_message = compress_research_system_prompt.format(date=get_today_str())
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
-    response = compress_model.invoke(messages)
+    response = await compress_model.ainvoke(messages)
 
     # Extract raw notes from tool and AI messages
     raw_notes = [
         str(m.content) for m in filter_messages(
-            state["researcher_messages"], 
+            state["researcher_messages"],
             include_types=["tool", "ai"]
         )
     ]

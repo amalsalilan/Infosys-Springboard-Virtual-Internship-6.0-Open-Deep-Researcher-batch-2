@@ -52,9 +52,9 @@ def get_mcp_client():
         _client = MultiServerMCPClient(mcp_config)
     return _client
 
-# Initialize models
-compress_model = init_chat_model(model="openai:gpt-4.1", max_tokens=32000)
-model = init_chat_model(model="anthropic:claude-sonnet-4-20250514")
+# Initialize models - Primary: Google Gemini | Alternatives: OpenAI, Anthropic
+compress_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai", max_tokens=32000)  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
+model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
 
 # ===== AGENT NODES =====
 
@@ -136,7 +136,7 @@ async def tool_node(state: ResearcherState):
 
     return {"researcher_messages": messages}
 
-def compress_research(state: ResearcherState) -> dict:
+async def compress_research(state: ResearcherState) -> dict:
     """Compress research findings into a concise summary.
 
     Takes all the research messages and tool outputs and creates
@@ -149,12 +149,12 @@ def compress_research(state: ResearcherState) -> dict:
     system_message = compress_research_system_prompt.format(date=get_today_str())
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
 
-    response = compress_model.invoke(messages)
+    response = await compress_model.ainvoke(messages)
 
     # Extract raw notes from tool and AI messages
     raw_notes = [
         str(m.content) for m in filter_messages(
-            state["researcher_messages"], 
+            state["researcher_messages"],
             include_types=["tool", "ai"]
         )
     ]
