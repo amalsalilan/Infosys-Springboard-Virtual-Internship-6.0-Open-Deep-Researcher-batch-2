@@ -409,4 +409,16 @@ logging.basicConfig(level=logging.DEBUG)
 # Or for specific modules:
 logging.getLogger("langchain").setLevel(logging.DEBUG)
 logging.getLogger("langgraph").setLevel(logging.DEBUG)
-``` 
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## 🙏 Acknowledgments
+
+This project is based on and references the [LangGraph Deep Research From Scratch](https://github.com/langchain-ai/deep_research_from_scratch) tutorial by LangChain AI. The original implementation provides a comprehensive guide to building deep research systems using LangGraph and multi-agent workflows.
