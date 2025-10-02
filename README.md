@@ -4,80 +4,242 @@ Deep research has broken out as one of the most popular agent applications. [Ope
 
 ![overview](https://github.com/user-attachments/assets/b71727bd-0094-40c4-af5e-87cdb02123b4)
 
-## 🚀 Quickstart 
+## 🚀 Quickstart
 
-### Prerequisites
+### Step 1: Prerequisites
 
-- **Node.js and npx** (required for MCP server in notebook 3):
+#### Python 3.11+
+Ensure you're using Python 3.11 or later (required for optimal LangGraph compatibility):
 ```bash
-# Install Node.js (includes npx)
-# On macOS with Homebrew:
-brew install node
+python3 --version
+```
 
-# On Ubuntu/Debian:
+If you need to install Python 3.11+:
+- **macOS**: `brew install python@3.11`
+- **Ubuntu/Debian**: `sudo apt install python3.11`
+- **Windows**: Download from [python.org](https://www.python.org/downloads/)
+
+#### UV Package Manager
+Install [uv](https://docs.astral.sh/uv/) for fast, reliable dependency management:
+
+**macOS/Linux/WSL:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+```
+
+**Windows (PowerShell):**
+```powershell
+powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
+
+**Update PATH:**
+```bash
+# macOS/Linux/WSL
+export PATH="$HOME/.local/bin:$PATH"
+
+# Or add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
+```
+
+Verify installation:
+```bash
+uv --version
+```
+
+#### Node.js and NPX (Required for MCP in Notebook 3)
+MCP filesystem server requires Node.js and npx:
+
+**macOS:**
+```bash
+brew install node
+```
+
+**Ubuntu/Debian/WSL:**
+```bash
 curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
 sudo apt-get install -y nodejs
+```
 
-# Verify installation:
+**Windows:**
+Download from [nodejs.org](https://nodejs.org/)
+
+**Verify installation:**
+```bash
 node --version
 npx --version
 ```
 
-- Ensure you're using Python 3.11 or later.
-- This version is required for optimal compatibility with LangGraph.
-```bash
-python3 --version
-```
-- [uv](https://docs.astral.sh/uv/) package manager
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-# Update PATH to use the new uv version
-export PATH="/Users/$USER/.local/bin:$PATH"
-```
+> **⚠️ WSL Users (Windows Subsystem for Linux):** The project includes automatic WSL detection and configuration for MCP servers. Node.js will be invoked via Windows when needed. Ensure both WSL Node.js AND Windows Node.js are installed.
 
-### Installation
+---
 
-1. Clone the repository:
+### Step 2: Clone and Setup
+
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/langchain-ai/deep_research_from_scratch
 cd deep_research_from_scratch
 ```
 
-2. Install the package and dependencies (this automatically creates and manages the virtual environment):
+2. **Install dependencies with uv:**
 ```bash
 uv sync
 ```
 
-3. Create a `.env` file in the project root with your API keys:
+This command:
+- Creates a virtual environment at `.venv/`
+- Installs all required packages from `pyproject.toml`
+- Generates/updates `uv.lock` for reproducible builds
+
+3. **Verify installation:**
 ```bash
-# Create .env file
+# Check installed packages
+uv pip list
+
+# Should see langchain, langgraph, tavily-python, etc.
+```
+
+---
+
+### Step 3: Configure API Keys
+
+1. **Create `.env` file:**
+```bash
 touch .env
 ```
 
-Add your API keys to the `.env` file:
+2. **Add your API keys** (open `.env` in your editor):
+
 ```env
-# Required for research agents with external search
+# ========================================
+# REQUIRED: Search API (for notebooks 2, 4, 5)
+# ========================================
 TAVILY_API_KEY=your_tavily_api_key_here
+# Get free key at: https://tavily.com
 
-# Required for model usage (Google models are primary, others are alternatives)
+# ========================================
+# REQUIRED: LLM Provider (choose at least one)
+# ========================================
+# Google Gemini (Primary - used by default in notebooks)
 GOOGLE_API_KEY=your_google_api_key_here
-OPENAI_API_KEY=your_openai_api_key_here
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+# Get key at: https://aistudio.google.com/apikey
 
-# Optional: For evaluation and tracing
+# OpenAI (Alternative)
+OPENAI_API_KEY=your_openai_api_key_here
+# Get key at: https://platform.openai.com/api-keys
+
+# Anthropic (Alternative)
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+# Get key at: https://console.anthropic.com/
+
+# ========================================
+# OPTIONAL: Tracing and Evaluation
+# ========================================
 LANGSMITH_API_KEY=your_langsmith_api_key_here
 LANGSMITH_TRACING=true
 LANGSMITH_PROJECT=deep_research_from_scratch
+# Get key at: https://smith.langchain.com/
 ```
 
-4. Run notebooks or code using uv:
+3. **Verify environment variables load:**
 ```bash
-# Run Jupyter notebooks directly
-uv run jupyter notebook
+# Using uv to run Python
+uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); print('✓ Keys loaded' if os.getenv('TAVILY_API_KEY') else '✗ Check .env file')"
+```
 
-# Or activate the virtual environment if preferred
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+---
+
+### Step 4: Run Jupyter Notebooks
+
+**Option 1: Direct launch with uv (Recommended)**
+```bash
+uv run jupyter notebook
+```
+
+**Option 2: Activate virtual environment first**
+```bash
+# macOS/Linux/WSL
+source .venv/bin/activate
+
+# Windows (Command Prompt)
+.venv\Scripts\activate.bat
+
+# Windows (PowerShell)
+.venv\Scripts\Activate.ps1
+
+# Then launch Jupyter
 jupyter notebook
+```
+
+**Your browser should open with the notebook interface.** Navigate to `notebooks/` to start!
+
+---
+
+### Step 5: Notebook Execution Order
+
+**📚 Recommended Learning Path:**
+
+1. **[1_scoping.ipynb](notebooks/1_scoping.ipynb)** - User clarification and research brief generation
+2. **[2_research_agent.ipynb](notebooks/2_research_agent.ipynb)** - Research agent with Tavily search
+3. **[3_research_agent_mcp.ipynb](notebooks/3_research_agent_mcp.ipynb)** - Research agent with MCP filesystem server
+4. **[4_research_supervisor.ipynb](notebooks/4_research_supervisor.ipynb)** - Multi-agent research coordinator
+5. **[5_full_agent.ipynb](notebooks/5_full_agent.ipynb)** - Complete end-to-end research system
+
+**⚙️ Important Notes:**
+- Notebooks 2, 4, 5 require `TAVILY_API_KEY`
+- All notebooks require at least one LLM API key (Google/OpenAI/Anthropic)
+- Notebook 3 requires Node.js for MCP server (see prerequisites)
+
+---
+
+### 🐧 Platform-Specific Notes
+
+#### WSL (Windows Subsystem for Linux) Users
+
+The project **automatically detects WSL** and configures MCP servers correctly. The implementation:
+
+1. Detects WSL environment using `platform.system()` and `platform.release()`
+2. Converts WSL paths (`/mnt/c/...`) to Windows paths (`C:\...`) using `wslpath`
+3. Invokes Windows Node.js via `cmd.exe` for MCP server compatibility
+
+**No manual configuration needed!** Just ensure:
+- ✅ Node.js is installed on Windows (`node.exe` in PATH)
+- ✅ WSL has access to Windows binaries (`cmd.exe` available)
+
+**Troubleshooting WSL MCP issues:**
+```bash
+# Verify Windows Node.js is accessible from WSL
+cmd.exe /c "node --version"
+
+# Verify wslpath conversion works
+wslpath -w /mnt/c/Users/$USER
+```
+
+#### macOS Users
+- Use Homebrew for Node.js: `brew install node`
+- UV install path: `~/.local/bin/uv`
+
+#### Windows (Native) Users
+- Use installers from official websites
+- Activate venv: `.venv\Scripts\activate` (Command Prompt) or `.venv\Scripts\Activate.ps1` (PowerShell)
+
+---
+
+### 🔄 Updating Dependencies
+
+**Update all packages to latest compatible versions:**
+```bash
+uv sync --upgrade
+```
+
+**Update specific packages:**
+```bash
+uv pip install --upgrade langchain langgraph
+```
+
+**Check for outdated packages:**
+```bash
+uv pip list --outdated
 ```
 
 ## Background 
@@ -202,4 +364,151 @@ This repo contains 5 tutorial notebooks that build a deep research system from s
 - **State Management**: Complex state flows across subgraphs and nodes
 - **Protocol Integration**: MCP servers and tool ecosystems
 
-Each notebook builds on the previous concepts, culminating in a production-ready deep research system that can handle complex, multi-faceted research queries with intelligent scoping and coordinated execution. 
+Each notebook builds on the previous concepts, culminating in a production-ready deep research system that can handle complex, multi-faceted research queries with intelligent scoping and coordinated execution.
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. MCP Server "Connection Closed" Error (Notebook 3)
+
+**Error:**
+```
+mcp.shared.exceptions.McpError: Connection closed
+```
+
+**Solution for WSL Users:**
+The project automatically handles WSL path conversion. Ensure:
+1. Windows Node.js is installed (not just WSL Node.js)
+2. `cmd.exe` is accessible from WSL
+3. Reload the notebook after updating (File → Reload from Disk)
+
+**Verify:**
+```bash
+# Should show Windows Node.js version
+cmd.exe /c "node --version"
+
+# Should convert paths correctly
+wslpath -w /mnt/c/Users/$USER
+```
+
+**Still not working?** Check that your notebook has been reloaded. The fix is in cells 4 and 6 of `3_research_agent_mcp.ipynb`.
+
+---
+
+#### 2. API Key Not Found Errors
+
+**Error:**
+```
+ValidationError: TAVILY_API_KEY not found
+```
+
+**Solution:**
+1. Verify `.env` file exists in project root
+2. Check API keys are set correctly (no quotes, no spaces)
+3. Reload environment:
+   ```bash
+   # Test key loading
+   uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); print(os.getenv('TAVILY_API_KEY'))"
+   ```
+4. Restart Jupyter kernel: Kernel → Restart Kernel
+
+---
+
+#### 3. Module Import Errors
+
+**Error:**
+```
+ModuleNotFoundError: No module named 'langchain'
+```
+
+**Solution:**
+1. Ensure virtual environment is activated:
+   ```bash
+   which python  # Should show .venv/bin/python
+   ```
+2. Re-sync dependencies:
+   ```bash
+   uv sync
+   ```
+3. Restart Jupyter notebook server
+
+---
+
+#### 4. UV Not Found
+
+**Error:**
+```
+command not found: uv
+```
+
+**Solution:**
+1. Install uv (see Prerequisites above)
+2. Update PATH:
+   ```bash
+   export PATH="$HOME/.local/bin:$PATH"
+   ```
+3. Verify: `uv --version`
+
+---
+
+#### 5. Jupyter Kernel Issues
+
+**Problem:** Kernel dies or becomes unresponsive
+
+**Solution:**
+1. Restart kernel: Kernel → Restart Kernel
+2. Clear outputs: Cell → All Output → Clear
+3. Reinstall kernel:
+   ```bash
+   source .venv/bin/activate
+   python -m ipykernel install --user --name=deep_research
+   ```
+
+---
+
+#### 6. Rate Limiting / API Quota Errors
+
+**Error:**
+```
+RateLimitError: You exceeded your current quota
+```
+
+**Solution:**
+1. Check API usage at provider dashboard (OpenAI/Anthropic/Google)
+2. Switch to alternative model in notebook:
+   ```python
+   # Change from:
+   model = init_chat_model("gemini-2.5-pro", model_provider="google_genai")
+
+   # To:
+   model = init_chat_model("gpt-4o-mini", model_provider="openai")
+   ```
+3. Add delays between requests if needed
+
+---
+
+### Getting Help
+
+1. **Check notebook outputs** - Error messages often contain the solution
+2. **Review API key configuration** - Most issues are authentication-related
+3. **Platform-specific docs** - See WSL/macOS/Windows sections above
+4. **LangChain/LangGraph docs** - [https://python.langchain.com/docs/](https://python.langchain.com/docs/)
+5. **Open an issue** - [GitHub Issues](https://github.com/langchain-ai/deep_research_from_scratch/issues)
+
+---
+
+### Debug Mode
+
+Enable detailed logging for troubleshooting:
+
+```python
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
+# Or for specific modules:
+logging.getLogger("langchain").setLevel(logging.DEBUG)
+logging.getLogger("langgraph").setLevel(logging.DEBUG)
+``` 
