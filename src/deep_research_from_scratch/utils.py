@@ -1,19 +1,21 @@
-
 """Research Utilities and Tools.
 
 This module provides search and content processing utilities for the research agent,
 including web search capabilities and content summarization tools.
 """
 
+import os
+import platform
+import subprocess
 from pathlib import Path
 from datetime import datetime
 from typing_extensions import Annotated, List, Literal
 
-from langchain.chat_models import init_chat_model 
+from langchain.chat_models import init_chat_model
 from langchain_core.messages import HumanMessage
 from langchain_core.runnables import RunnableConfig
 from langchain_core.tools import tool, InjectedToolArg
-from tavily import AsyncTavilyClient
+from tavily import TavilyClient
 
 from deep_research_from_scratch.state_research import Summary
 from deep_research_from_scratch.prompts import summarize_webpage_prompt
@@ -37,15 +39,47 @@ def get_current_dir() -> Path:
     except NameError:  # __file__ is not defined
         return Path.cwd()
 
+def convert_path_for_mcp(path: Path) -> str:
+    """Convert a path to Windows format for MCP servers on WSL.
+
+    On WSL, MCP servers need to run with Windows Node.js which requires
+    Windows-style paths. This function converts WSL paths to Windows format.
+
+    Args:
+        path: Path object to convert
+
+    Returns:
+        String path in Windows format on WSL, unchanged otherwise
+    """
+    path_str = str(path)
+
+    # Check if we're on WSL - convert to Windows format
+    if platform.system() == "Linux" and "microsoft" in platform.release().lower():
+        try:
+            # Use wslpath to convert WSL path to Windows format
+            result = subprocess.run(
+                ["wslpath", "-w", path_str],
+                capture_output=True,
+                text=True,
+                check=True
+            )
+            return result.stdout.strip()
+        except Exception:
+            # If conversion fails, return original path
+            return path_str
+
+    # Not on WSL, return path as-is
+    return path_str
+
 # ===== CONFIGURATION =====
 
 # Primary: Google Gemini | Alternatives: "openai:gpt-4.1-mini", "anthropic:claude-haiku-3-5-20241022"
-summarization_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")
-tavily_client = AsyncTavilyClient()
+summarization_model = init_chat_model(model="gemini-2.5-pro", model_provider="google_genai", temperature=0.0)
+tavily_client = TavilyClient()
 
 # ===== SEARCH FUNCTIONS =====
 
-async def tavily_search_multiple(
+def tavily_search_multiple(
     search_queries: List[str],
     max_results: int = 3,
     topic: Literal["general", "news", "finance"] = "general",
@@ -63,10 +97,10 @@ async def tavily_search_multiple(
         List of search result dictionaries
     """
 
-    # Execute searches sequentially using async client
+    # Execute searches sequentially. Note: yon can use AsyncTavilyClient to parallelize this step.
     search_docs = []
     for query in search_queries:
-        result = await tavily_client.search(
+        result = tavily_client.search(
             query,
             max_results=max_results,
             include_raw_content=include_raw_content,
@@ -76,7 +110,7 @@ async def tavily_search_multiple(
 
     return search_docs
 
-async def summarize_webpage_content(webpage_content: str) -> str:
+def summarize_webpage_content(webpage_content: str) -> str:
     """Summarize webpage content using the configured summarization model.
 
     Args:
@@ -90,7 +124,7 @@ async def summarize_webpage_content(webpage_content: str) -> str:
         structured_model = summarization_model.with_structured_output(Summary)
 
         # Generate summary
-        summary = await structured_model.ainvoke([
+        summary = structured_model.invoke([
             HumanMessage(content=summarize_webpage_prompt.format(
                 webpage_content=webpage_content,
                 date=get_today_str()
@@ -128,7 +162,7 @@ def deduplicate_search_results(search_results: List[dict]) -> dict:
 
     return unique_results
 
-async def process_search_results(unique_results: dict) -> dict:
+def process_search_results(unique_results: dict) -> dict:
     """Process search results by summarizing content where available.
 
     Args:
@@ -145,7 +179,7 @@ async def process_search_results(unique_results: dict) -> dict:
             content = result['content']
         else:
             # Summarize raw content for better processing
-            content = await summarize_webpage_content(result['raw_content'])
+            content = summarize_webpage_content(result['raw_content'])
 
         summarized_results[url] = {
             'title': result['title'],
@@ -179,7 +213,7 @@ def format_search_output(summarized_results: dict) -> str:
 # ===== RESEARCH TOOLS =====
 
 @tool(parse_docstring=True)
-async def tavily_search(
+def tavily_search(
     query: str,
     max_results: Annotated[int, InjectedToolArg] = 3,
     topic: Annotated[Literal["general", "news", "finance"], InjectedToolArg] = "general",
@@ -195,7 +229,7 @@ async def tavily_search(
         Formatted string of search results with summaries
     """
     # Execute search for single query
-    search_results = await tavily_search_multiple(
+    search_results = tavily_search_multiple(
         [query],  # Convert single query to list for the internal function
         max_results=max_results,
         topic=topic,
@@ -206,7 +240,7 @@ async def tavily_search(
     unique_results = deduplicate_search_results(search_results)
 
     # Process results with summarization
-    summarized_results = await process_search_results(unique_results)
+    summarized_results = process_search_results(unique_results)
 
     # Format output for consumption
     return format_search_output(summarized_results)

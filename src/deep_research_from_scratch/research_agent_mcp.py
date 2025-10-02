@@ -12,9 +12,11 @@ Key features:
 - Secure directory access with permission checking
 - Research compression for efficient processing
 - Lazy MCP client initialization for LangGraph Platform compatibility
+- WSL support using Windows Node.js via cmd.exe
 """
 
 import os
+import platform
 
 from typing_extensions import Literal
 
@@ -25,19 +27,27 @@ from langgraph.graph import StateGraph, START, END
 
 from deep_research_from_scratch.prompts import research_agent_prompt_with_mcp, compress_research_system_prompt, compress_research_human_message
 from deep_research_from_scratch.state_research import ResearcherState, ResearcherOutputState
-from deep_research_from_scratch.utils import get_today_str, think_tool, get_current_dir
+from deep_research_from_scratch.utils import get_today_str, think_tool, get_current_dir, convert_path_for_mcp
 
 # ===== CONFIGURATION =====
+
+# Determine command and args based on platform (WSL needs Windows Node.js)
+files_path = convert_path_for_mcp(get_current_dir() / "files")
+
+if platform.system() == "Linux" and "microsoft" in platform.release().lower():
+    # On WSL, use cmd.exe to invoke Windows npx (Windows Node.js)
+    mcp_command = "cmd.exe"
+    mcp_args = ["/c", "npx", "-y", "@modelcontextprotocol/server-filesystem", files_path]
+else:
+    # On other platforms, use standard npx
+    mcp_command = "npx"
+    mcp_args = ["-y", "@modelcontextprotocol/server-filesystem", files_path]
 
 # MCP server configuration for filesystem access
 mcp_config = {
     "filesystem": {
-        "command": "npx",
-        "args": [
-            "-y",  # Auto-install if needed
-            "@modelcontextprotocol/server-filesystem",
-            str(get_current_dir() / "files")  # Path to research documents
-        ],
+        "command": mcp_command,
+        "args": mcp_args,
         "transport": "stdio"  # Communication via stdin/stdout
     }
 }
@@ -53,8 +63,8 @@ def get_mcp_client():
     return _client
 
 # Initialize models - Primary: Google Gemini | Alternatives: OpenAI, Anthropic
-compress_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai", max_tokens=32000)  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
-model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
+compress_model = init_chat_model(model="gemini-2.5-pro", model_provider="google_genai", temperature=0.0, max_tokens=32000)  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
+model = init_chat_model(model="gemini-2.5-pro", model_provider="google_genai", temperature=0.0)  # Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
 
 # ===== AGENT NODES =====
 
@@ -136,7 +146,7 @@ async def tool_node(state: ResearcherState):
 
     return {"researcher_messages": messages}
 
-async def compress_research(state: ResearcherState) -> dict:
+def compress_research(state: ResearcherState) -> dict:
     """Compress research findings into a concise summary.
 
     Takes all the research messages and tool outputs and creates
@@ -149,12 +159,12 @@ async def compress_research(state: ResearcherState) -> dict:
     system_message = compress_research_system_prompt.format(date=get_today_str())
     messages = [SystemMessage(content=system_message)] + state.get("researcher_messages", []) + [HumanMessage(content=compress_research_human_message)]
 
-    response = await compress_model.ainvoke(messages)
+    response = compress_model.invoke(messages)
 
     # Extract raw notes from tool and AI messages
     raw_notes = [
         str(m.content) for m in filter_messages(
-            state["researcher_messages"],
+            state["researcher_messages"], 
             include_types=["tool", "ai"]
         )
     ]

@@ -69,7 +69,7 @@ except ImportError:
 
 supervisor_tools = [ConductResearch, ResearchComplete, think_tool]
 # Primary: Google Gemini | Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
-supervisor_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai")
+supervisor_model = init_chat_model(model="gemini-2.5-pro", model_provider="google_genai", temperature=0.0)
 supervisor_model_with_tools = supervisor_model.bind_tools(supervisor_tools)
 
 # System constants

@@ -25,7 +25,7 @@ from deep_research_from_scratch.multi_agent_supervisor import supervisor_agent
 
 from langchain.chat_models import init_chat_model
 # Primary: Google Gemini | Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
-writer_model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai", max_tokens=32000)
+writer_model = init_chat_model(model="gemini-2.5-pro", model_provider="google_genai", temperature=0.0, max_tokens=32000)
 
 # ===== FINAL REPORT GENERATION =====
 

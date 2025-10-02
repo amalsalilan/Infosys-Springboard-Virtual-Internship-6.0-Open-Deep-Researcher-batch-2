@@ -29,11 +29,16 @@ def get_today_str() -> str:
 # ===== CONFIGURATION =====
 
 # Initialize model - Primary: Google Gemini | Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
-model = init_chat_model(model="gemini-2.0-flash-exp", model_provider="google_genai", temperature=0.0)
+
+model = init_chat_model(
+    model="gemini-2.5-flash-lite",
+    model_provider="google_genai",
+    temperature=0.0
+)
 
 # ===== WORKFLOW NODES =====
 
-async def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brief", "__end__"]]:
+def clarify_with_user(state: AgentState) -> Command[Literal["write_research_brief", "__end__"]]:
     """
     Determine if the user's request contains sufficient information to proceed with research.
 
@@ -44,9 +49,9 @@ async def clarify_with_user(state: AgentState) -> Command[Literal["write_researc
     structured_output_model = model.with_structured_output(ClarifyWithUser)
 
     # Invoke the model with clarification instructions
-    response = await structured_output_model.ainvoke([
+    response = structured_output_model.invoke([
         HumanMessage(content=clarify_with_user_instructions.format(
-            messages=get_buffer_string(messages=state["messages"]),
+            messages=get_buffer_string(messages=state["messages"]), 
             date=get_today_str()
         ))
     ])
@@ -54,16 +59,16 @@ async def clarify_with_user(state: AgentState) -> Command[Literal["write_researc
     # Route based on clarification need
     if response.need_clarification:
         return Command(
-            goto=END,
+            goto=END, 
             update={"messages": [AIMessage(content=response.question)]}
         )
     else:
         return Command(
-            goto="write_research_brief",
+            goto="write_research_brief", 
             update={"messages": [AIMessage(content=response.verification)]}
         )
 
-async def write_research_brief(state: AgentState):
+def write_research_brief(state: AgentState):
     """
     Transform the conversation history into a comprehensive research brief.
 
@@ -74,7 +79,7 @@ async def write_research_brief(state: AgentState):
     structured_output_model = model.with_structured_output(ResearchQuestion)
 
     # Generate research brief from conversation history
-    response = await structured_output_model.ainvoke([
+    response = structured_output_model.invoke([
         HumanMessage(content=transform_messages_into_research_topic_prompt.format(
             messages=get_buffer_string(state.get("messages", [])),
             date=get_today_str()
