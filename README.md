@@ -92,7 +92,12 @@ cd deep_research_from_scratch
 uv sync
 ```
 
-This creates a virtual environment at `.venv/` and installs all required packages.
+This creates a virtual environment at `.venv/` and installs all required packages from `pyproject.toml`.
+
+**Alternative installation method:**
+```bash
+uv pip install -r pyproject.toml
+```
 
 **2.3 Verify installation:**
 ```bash
@@ -105,7 +110,12 @@ You should see packages like `langchain`, `langgraph`, `tavily-python`, etc.
 
 ### Step 3: Configure Environment Variables
 
-**3.1 Create `.env` file in project root:**
+**3.1 Copy the example environment file:**
+```bash
+cp .env.example .env
+```
+
+If `.env.example` doesn't exist, create `.env` manually:
 ```bash
 touch .env
 ```
@@ -152,7 +162,9 @@ uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); prin
 
 ### Step 4: Start LangGraph Studio
 
-LangGraph Studio is the recommended way to run and interact with the deep research agents. It provides a visual interface for debugging and monitoring agent workflows in real-time.
+LangGraph Studio provides a visual interface for running and debugging the deep research agents in real-time.
+
+#### Option A: Use LangGraph Desktop App (Recommended)
 
 **4.1 Download LangGraph Studio:**
 - **macOS**: [Download for Mac](https://langgraph-studio.vercel.app/download?os=mac)
@@ -171,7 +183,32 @@ LangGraph Studio is the recommended way to run and interact with the deep resear
 - Check the **Settings** panel to confirm API keys are detected
 - You should see green checkmarks for configured keys
 
-**4.5 Select a graph to run:**
+#### Option B: Run LangGraph Server Locally
+
+Start the LangGraph development server with the CLI:
+
+```bash
+uvx --refresh --from "langgraph-cli[inmem]" --with-editable . --python 3.11 langgraph dev --allow-blocking
+```
+
+This command:
+- Installs and runs the LangGraph CLI with in-memory storage
+- Makes the current package editable (changes reflect immediately)
+- Starts the development server on Python 3.11
+
+**The server will start with these endpoints:**
+
+- 🚀 **API**: http://127.0.0.1:2024
+- 🎨 **Studio UI**: https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024
+- 📚 **API Docs**: http://127.0.0.1:2024/docs
+
+**Access the Studio UI** by opening the Studio URL in your browser - it connects to your local server.
+
+---
+
+### Step 5: Run Your First Agent
+
+**5.1 Select a graph to run:**
 
 LangGraph Studio detects 5 agent graphs in this project:
 
@@ -183,7 +220,7 @@ LangGraph Studio detects 5 agent graphs in this project:
 | **`research_agent_supervisor`** | Multi-agent coordinator | Complex multi-topic research |
 | **`research_agent_full`** | Complete end-to-end system | Full workflow from scope to report |
 
-**4.6 Run your first agent:**
+**5.2 Run your first agent:**
 1. Select **`scope_research`** from the graph dropdown
 2. Click the **Input** panel and enter a research topic (e.g., "AI safety in autonomous vehicles")
 3. Click **"Submit"** or press Enter
@@ -195,7 +232,7 @@ Start with **`scope_research`** - it helps you understand how the system clarifi
 
 ---
 
-### Step 5: Explore Tutorial Notebooks (Optional)
+### Step 6: Explore Tutorial Notebooks (Optional)
 
 The `notebooks/` directory contains tutorial notebooks that explain how each component was built. These are for learning purposes - **the actual agents run in LangGraph Studio**.
 
