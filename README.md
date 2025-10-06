@@ -4,23 +4,33 @@ Deep research has broken out as one of the most popular agent applications. [Ope
 
 ![overview](https://github.com/user-attachments/assets/b71727bd-0094-40c4-af5e-87cdb02123b4)
 
-## 🚀 Quickstart
+## 🚀 First-Time Setup Guide
 
-### Step 1: Prerequisites
+Follow these steps to get the deep research system running on your machine.
 
-#### Python 3.11+
-Ensure you're using Python 3.11 or later (required for optimal LangGraph compatibility):
+---
+
+### Step 1: Install Prerequisites
+
+Before you begin, install these required tools:
+
+#### 1.1 Python 3.11+
+
+**Check if you have Python 3.11+:**
 ```bash
 python3 --version
 ```
 
-If you need to install Python 3.11+:
+**If you need to install Python:**
 - **macOS**: `brew install python@3.11`
 - **Ubuntu/Debian**: `sudo apt install python3.11`
 - **Windows**: Download from [python.org](https://www.python.org/downloads/)
 
-#### UV Package Manager
-Install [uv](https://docs.astral.sh/uv/) for fast, reliable dependency management:
+#### 1.2 UV Package Manager
+
+UV is a fast Python package manager that handles dependencies and virtual environments.
+
+**Install UV:**
 
 **macOS/Linux/WSL:**
 ```bash
@@ -32,22 +42,18 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
 ```
 
-**Update PATH:**
+**Add UV to PATH:**
 ```bash
-# macOS/Linux/WSL
+# macOS/Linux/WSL - Add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
 export PATH="$HOME/.local/bin:$PATH"
-
-# Or add to your shell profile (~/.bashrc, ~/.zshrc, etc.)
-echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.bashrc
 ```
 
-Verify installation:
+**Verify installation:**
 ```bash
 uv --version
 ```
 
-#### Node.js and NPX (Required for MCP in Notebook 3)
-MCP filesystem server requires Node.js and npx:
+#### 1.3 Node.js (Required for Notebook 3 - MCP)
 
 **macOS:**
 ```bash
@@ -69,94 +75,120 @@ node --version
 npx --version
 ```
 
-> **⚠️ WSL Users (Windows Subsystem for Linux):** The project includes automatic WSL detection and configuration for MCP servers. Node.js will be invoked via Windows when needed. Ensure both WSL Node.js AND Windows Node.js are installed.
+> **💡 WSL Users:** Install Node.js on BOTH Windows and WSL. The project auto-detects WSL and routes MCP servers through Windows Node.js.
 
 ---
 
-### Step 2: Clone and Setup
+### Step 2: Clone Repository and Install Dependencies
 
-1. **Clone the repository:**
+**2.1 Clone the repository:**
 ```bash
 git clone https://github.com/langchain-ai/deep_research_from_scratch
 cd deep_research_from_scratch
 ```
 
-2. **Install dependencies with uv:**
+**2.2 Install all dependencies:**
 ```bash
 uv sync
 ```
 
-This command:
-- Creates a virtual environment at `.venv/`
-- Installs all required packages from `pyproject.toml`
-- Generates/updates `uv.lock` for reproducible builds
+This creates a virtual environment at `.venv/` and installs all required packages.
 
-3. **Verify installation:**
+**2.3 Verify installation:**
 ```bash
-# Check installed packages
 uv pip list
-
-# Should see langchain, langgraph, tavily-python, etc.
 ```
+
+You should see packages like `langchain`, `langgraph`, `tavily-python`, etc.
 
 ---
 
-### Step 3: Configure API Keys
+### Step 3: Configure Environment Variables
 
-1. **Create `.env` file:**
+**3.1 Create `.env` file in project root:**
 ```bash
 touch .env
 ```
 
-2. **Add your API keys** (open `.env` in your editor):
+**3.2 Open `.env` in your text editor and add your API keys:**
 
 ```env
 # ========================================
-# REQUIRED: Search API (for notebooks 2, 4, 5)
+# REQUIRED: Search API
 # ========================================
-TAVILY_API_KEY=your_tavily_api_key_here
+TAVILY_API_KEY=tvly-xxxxxxxxxxxxxxxxxxxxx
 # Get free key at: https://tavily.com
 
 # ========================================
-# REQUIRED: LLM Provider (choose at least one)
+# REQUIRED: LLM Provider (choose one or more)
 # ========================================
-# Google Gemini (Primary - used by default in notebooks)
-GOOGLE_API_KEY=your_google_api_key_here
+# Google Gemini (Default)
+GOOGLE_API_KEY=AIzaSy-xxxxxxxxxxxxxxxxxxxxx
 # Get key at: https://aistudio.google.com/apikey
 
 # OpenAI (Alternative)
-OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxxxxxxx
 # Get key at: https://platform.openai.com/api-keys
 
 # Anthropic (Alternative)
-ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_API_KEY=sk-ant-xxxxxxxxxxxxxxxxxxxxx
 # Get key at: https://console.anthropic.com/
 
 # ========================================
-# OPTIONAL: Tracing and Evaluation
+# OPTIONAL: LangSmith Tracing
 # ========================================
-LANGSMITH_API_KEY=your_langsmith_api_key_here
+LANGSMITH_API_KEY=lsv2_pt_xxxxxxxxxxxxxxxxxxxxx
 LANGSMITH_TRACING=true
 LANGSMITH_PROJECT=deep_research_from_scratch
 # Get key at: https://smith.langchain.com/
 ```
 
-3. **Verify environment variables load:**
+**3.3 Verify environment variables:**
 ```bash
-# Using uv to run Python
-uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); print('✓ Keys loaded' if os.getenv('TAVILY_API_KEY') else '✗ Check .env file')"
+uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); print('✓ Environment configured' if os.getenv('TAVILY_API_KEY') else '✗ Missing API keys')"
 ```
 
 ---
 
-### Step 4: Run Jupyter Notebooks
+### Step 4: Choose Your Development Environment
 
-**Option 1: Direct launch with uv (Recommended)**
+You can work with the notebooks in two ways:
+
+#### Option A: LangGraph Studio (Recommended for Visual Debugging)
+
+LangGraph Studio provides a visual interface for debugging and monitoring agent workflows.
+
+**4.1 Download LangGraph Studio:**
+- **macOS**: [Download for Mac](https://langgraph-studio.vercel.app/download?os=mac)
+- **Windows**: [Download for Windows](https://langgraph-studio.vercel.app/download?os=windows)
+- **Linux**: [Download for Linux](https://langgraph-studio.vercel.app/download?os=linux)
+
+**4.2 Install and launch LangGraph Studio**
+
+**4.3 Open the project:**
+1. Click "Open Folder" in LangGraph Studio
+2. Navigate to your `deep_research_from_scratch` directory
+3. Select the folder
+
+**4.4 Configure environment in Studio:**
+LangGraph Studio automatically loads your `.env` file. Verify keys are loaded in the Settings panel.
+
+**4.5 Start exploring:**
+- Navigate to `notebooks/` in the file explorer
+- Open `1_scoping.ipynb` to begin
+- Use the visual graph view to see agent execution in real-time
+
+#### Option B: Jupyter Notebooks (Classic Approach)
+
+**4.1 Launch Jupyter:**
 ```bash
 uv run jupyter notebook
 ```
 
-**Option 2: Activate virtual environment first**
+**4.2 Open notebooks:**
+Your browser will open automatically. Navigate to `notebooks/` folder.
+
+**4.3 Alternative - Activate venv first:**
 ```bash
 # macOS/Linux/WSL
 source .venv/bin/activate
@@ -171,76 +203,42 @@ source .venv/bin/activate
 jupyter notebook
 ```
 
-**Your browser should open with the notebook interface.** Navigate to `notebooks/` to start!
+---
+
+### Step 5: Run the Notebooks
+
+**📚 Recommended Order:**
+
+| Order | Notebook | Description | Requirements |
+|-------|----------|-------------|--------------|
+| **1** | `1_scoping.ipynb` | User clarification & research brief generation | LLM API key |
+| **2** | `2_research_agent.ipynb` | Research agent with Tavily search | Tavily + LLM API |
+| **3** | `3_research_agent_mcp.ipynb` | Research agent with MCP filesystem | Node.js + LLM API |
+| **4** | `4_research_supervisor.ipynb` | Multi-agent coordinator | Tavily + LLM API |
+| **5** | `5_full_agent.ipynb` | Complete end-to-end system | Tavily + LLM API |
+
+**🎯 Quick Start:**
+1. Start with `1_scoping.ipynb` - it works with just an LLM API key
+2. Progress sequentially - each builds on previous concepts
+3. Use Shift+Enter to run cells
+4. Read the markdown explanations between code cells
 
 ---
 
-### Step 5: Notebook Execution Order
+### Platform-Specific Tips
 
-**📚 Recommended Learning Path:**
+#### WSL (Windows Subsystem for Linux)
+✅ **Auto-configured** - Project detects WSL and handles path conversion automatically
+✅ Install Node.js on both Windows AND WSL
+✅ Verify Windows Node.js access: `cmd.exe /c "node --version"`
 
-1. **[1_scoping.ipynb](notebooks/1_scoping.ipynb)** - User clarification and research brief generation
-2. **[2_research_agent.ipynb](notebooks/2_research_agent.ipynb)** - Research agent with Tavily search
-3. **[3_research_agent_mcp.ipynb](notebooks/3_research_agent_mcp.ipynb)** - Research agent with MCP filesystem server
-4. **[4_research_supervisor.ipynb](notebooks/4_research_supervisor.ipynb)** - Multi-agent research coordinator
-5. **[5_full_agent.ipynb](notebooks/5_full_agent.ipynb)** - Complete end-to-end research system
+#### macOS
+✅ Use Homebrew for dependencies: `brew install python@3.11 node`
+✅ UV install location: `~/.local/bin/uv`
 
-**⚙️ Important Notes:**
-- Notebooks 2, 4, 5 require `TAVILY_API_KEY`
-- All notebooks require at least one LLM API key (Google/OpenAI/Anthropic)
-- Notebook 3 requires Node.js for MCP server (see prerequisites)
-
----
-
-### 🐧 Platform-Specific Notes
-
-#### WSL (Windows Subsystem for Linux) Users
-
-The project **automatically detects WSL** and configures MCP servers correctly. The implementation:
-
-1. Detects WSL environment using `platform.system()` and `platform.release()`
-2. Converts WSL paths (`/mnt/c/...`) to Windows paths (`C:\...`) using `wslpath`
-3. Invokes Windows Node.js via `cmd.exe` for MCP server compatibility
-
-**No manual configuration needed!** Just ensure:
-- ✅ Node.js is installed on Windows (`node.exe` in PATH)
-- ✅ WSL has access to Windows binaries (`cmd.exe` available)
-
-**Troubleshooting WSL MCP issues:**
-```bash
-# Verify Windows Node.js is accessible from WSL
-cmd.exe /c "node --version"
-
-# Verify wslpath conversion works
-wslpath -w /mnt/c/Users/$USER
-```
-
-#### macOS Users
-- Use Homebrew for Node.js: `brew install node`
-- UV install path: `~/.local/bin/uv`
-
-#### Windows (Native) Users
-- Use installers from official websites
-- Activate venv: `.venv\Scripts\activate` (Command Prompt) or `.venv\Scripts\Activate.ps1` (PowerShell)
-
----
-
-### 🔄 Updating Dependencies
-
-**Update all packages to latest compatible versions:**
-```bash
-uv sync --upgrade
-```
-
-**Update specific packages:**
-```bash
-uv pip install --upgrade langchain langgraph
-```
-
-**Check for outdated packages:**
-```bash
-uv pip list --outdated
-```
+#### Windows
+✅ Use PowerShell for UV installation
+✅ Activate venv: `.venv\Scripts\Activate.ps1` (PowerShell) or `.venv\Scripts\activate.bat` (CMD)
 
 ## 📚 What You'll Build
 
