@@ -150,13 +150,9 @@ uv run python -c "from dotenv import load_dotenv; import os; load_dotenv(); prin
 
 ---
 
-### Step 4: Choose Your Development Environment
+### Step 4: Start LangGraph Studio
 
-You can work with the notebooks in two ways:
-
-#### Option A: LangGraph Studio (Recommended for Visual Debugging)
-
-LangGraph Studio provides a visual interface for debugging and monitoring agent workflows.
+LangGraph Studio is the recommended way to run and interact with the deep research agents. It provides a visual interface for debugging and monitoring agent workflows in real-time.
 
 **4.1 Download LangGraph Studio:**
 - **macOS**: [Download for Mac](https://langgraph-studio.vercel.app/download?os=mac)
@@ -166,62 +162,68 @@ LangGraph Studio provides a visual interface for debugging and monitoring agent 
 **4.2 Install and launch LangGraph Studio**
 
 **4.3 Open the project:**
-1. Click "Open Folder" in LangGraph Studio
+1. Click **"Open Folder"** in LangGraph Studio
 2. Navigate to your `deep_research_from_scratch` directory
-3. Select the folder
+3. Click **"Select Folder"**
 
-**4.4 Configure environment in Studio:**
-LangGraph Studio automatically loads your `.env` file. Verify keys are loaded in the Settings panel.
+**4.4 Verify configuration:**
+- LangGraph Studio automatically loads your `.env` file
+- Check the **Settings** panel to confirm API keys are detected
+- You should see green checkmarks for configured keys
 
-**4.5 Start exploring:**
-- Navigate to `notebooks/` in the file explorer
-- Open `1_scoping.ipynb` to begin
-- Use the visual graph view to see agent execution in real-time
+**4.5 Select a graph to run:**
 
-#### Option B: Jupyter Notebooks (Classic Approach)
+LangGraph Studio detects 5 agent graphs in this project:
 
-**4.1 Launch Jupyter:**
-```bash
-uv run jupyter notebook
-```
+| Graph Name | Description | Best For |
+|------------|-------------|----------|
+| **`scope_research`** | User clarification & brief generation | Starting point - understanding user intent |
+| **`research_agent`** | Research agent with Tavily search | Single-topic deep research |
+| **`research_agent_mcp`** | Research agent with MCP filesystem | Local file-based research |
+| **`research_agent_supervisor`** | Multi-agent coordinator | Complex multi-topic research |
+| **`research_agent_full`** | Complete end-to-end system | Full workflow from scope to report |
 
-**4.2 Open notebooks:**
-Your browser will open automatically. Navigate to `notebooks/` folder.
+**4.6 Run your first agent:**
+1. Select **`scope_research`** from the graph dropdown
+2. Click the **Input** panel and enter a research topic (e.g., "AI safety in autonomous vehicles")
+3. Click **"Submit"** or press Enter
+4. Watch the visual graph execute in real-time
+5. View the results in the **Output** panel
 
-**4.3 Alternative - Activate venv first:**
-```bash
-# macOS/Linux/WSL
-source .venv/bin/activate
-
-# Windows (Command Prompt)
-.venv\Scripts\activate.bat
-
-# Windows (PowerShell)
-.venv\Scripts\Activate.ps1
-
-# Then launch Jupyter
-jupyter notebook
-```
+**🎯 Recommended Starting Graph:**
+Start with **`scope_research`** - it helps you understand how the system clarifies research scope before diving into the full research workflow.
 
 ---
 
-### Step 5: Run the Notebooks
+### Step 5: Explore Tutorial Notebooks (Optional)
 
-**📚 Recommended Order:**
+The `notebooks/` directory contains tutorial notebooks that explain how each component was built. These are for learning purposes - **the actual agents run in LangGraph Studio**.
 
-| Order | Notebook | Description | Requirements |
-|-------|----------|-------------|--------------|
-| **1** | `1_scoping.ipynb` | User clarification & research brief generation | LLM API key |
-| **2** | `2_research_agent.ipynb` | Research agent with Tavily search | Tavily + LLM API |
-| **3** | `3_research_agent_mcp.ipynb` | Research agent with MCP filesystem | Node.js + LLM API |
-| **4** | `4_research_supervisor.ipynb` | Multi-agent coordinator | Tavily + LLM API |
-| **5** | `5_full_agent.ipynb` | Complete end-to-end system | Tavily + LLM API |
+**To explore the tutorial notebooks:**
 
-**🎯 Quick Start:**
-1. Start with `1_scoping.ipynb` - it works with just an LLM API key
-2. Progress sequentially - each builds on previous concepts
-3. Use Shift+Enter to run cells
-4. Read the markdown explanations between code cells
+```bash
+# Launch Jupyter Notebook
+uv run jupyter notebook
+
+# Or activate venv first
+source .venv/bin/activate  # macOS/Linux/WSL
+jupyter notebook
+```
+
+**📚 Tutorial Notebook Order:**
+
+| Notebook | Explains | Corresponding Studio Graph |
+|----------|----------|---------------------------|
+| `1_scoping.ipynb` | How scope clarification works | `scope_research` |
+| `2_research_agent.ipynb` | Research agent with Tavily | `research_agent` |
+| `3_research_agent_mcp.ipynb` | Research agent with MCP | `research_agent_mcp` |
+| `4_research_supervisor.ipynb` | Multi-agent coordination | `research_agent_supervisor` |
+| `5_full_agent.ipynb` | End-to-end system integration | `research_agent_full` |
+
+**💡 Learning Path:**
+1. Run agents in LangGraph Studio first to see them in action
+2. Read the corresponding notebook to understand implementation details
+3. Modify code in `src/` and reload Studio to see changes
 
 ---
 
