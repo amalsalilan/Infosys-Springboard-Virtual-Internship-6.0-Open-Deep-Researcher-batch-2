@@ -16,13 +16,15 @@ uv sync
 
 # 2. Set up API keys
 cp .env.example .env
-# Edit .env and add your GOOGLE_API_KEY (get it from https://aistudio.google.com/app/apikey)
+# Edit .env and add BOTH required API keys:
+#   - TAVILY_API_KEY (get free at https://tavily.com)
+#   - GOOGLE_API_KEY (get at https://aistudio.google.com/app/apikey)
 
 # 3. Run LangGraph Studio
 uv run langgraph dev --allow-blocking
 ```
 
-Then open **https://smith.langchain.com/studio/** to use the research system.
+Then open **https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024** to use the research system.
 
 > **Note:** All source code is pre-generated and committed. No need to run notebooks unless you want to modify the system.
 
