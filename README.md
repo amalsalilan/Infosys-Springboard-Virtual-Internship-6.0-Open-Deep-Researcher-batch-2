@@ -265,13 +265,33 @@ The `notebooks/` directory contains tutorial notebooks that explain how each com
 **To explore the tutorial notebooks:**
 
 ```bash
-# Launch Jupyter Notebook
+# Option 1: Use uv (Recommended - automatically uses venv)
 uv run jupyter notebook
 
-# Or activate venv first
+# Option 2: Activate venv first
 source .venv/bin/activate  # macOS/Linux/WSL
+# or: .venv\Scripts\activate  # Windows
 jupyter notebook
 ```
+
+**🚨 IMPORTANT: Select the Correct Kernel**
+
+After opening a notebook, you **MUST** select the correct Python kernel:
+
+**VSCode Users:**
+1. Open notebook
+2. Click "Select Kernel" (top-right)
+3. Choose "Python Environments" → `.venv/bin/python` or `.venv (Python 3.11)`
+4. If `.venv` doesn't appear, click "Refresh" or restart VSCode
+
+**Jupyter Lab/Notebook Users:**
+1. Open notebook
+2. Click "Kernel" → "Change Kernel"
+3. Select kernel with "(venv)" or the path to `.venv/bin/python`
+4. If not available, run: `source .venv/bin/activate && python -m ipykernel install --user --name=deep-research --display-name="Deep Research (venv)"`
+
+**💡 How to Verify:**
+The kernel name should show `.venv` or `deep-research`, NOT system Python!
 
 **📚 Tutorial Notebook Order:**
 
@@ -378,23 +398,48 @@ ValidationError: TAVILY_API_KEY not found
 
 ---
 
-#### 3. Module Import Errors
+#### 3. Module Import Errors in Notebooks
 
 **Error:**
 ```
+ModuleNotFoundError: No module named 'utils'
 ModuleNotFoundError: No module named 'langchain'
+ModuleNotFoundError: No module named 'deep_research_from_scratch'
 ```
 
 **Solution:**
-1. Ensure virtual environment is activated:
+
+**Root Cause:** Jupyter is using the wrong kernel (system Python instead of `.venv`)
+
+**Fix:**
+1. **Select the correct kernel in your notebook:**
+   - **VSCode**: Click "Select Kernel" (top-right) → Choose `.venv/bin/python`
+   - **Jupyter**: Kernel → Change Kernel → Select venv kernel
+
+2. **If `.venv` kernel is not available:**
    ```bash
-   which python  # Should show .venv/bin/python
+   source .venv/bin/activate
+   python -m ipykernel install --user --name=deep-research --display-name="Deep Research (venv)"
    ```
-2. Re-sync dependencies:
-   ```bash
-   uv sync
-   ```
-3. Restart Jupyter notebook server
+
+3. **Verify kernel is correct:**
+   - The kernel name should show `.venv` or `Deep Research (venv)`
+   - NOT "Python 3" or "ipykernel"
+
+4. **Restart kernel after switching:**
+   - Kernel → Restart Kernel
+
+**Alternative (if above doesn't work):**
+```bash
+# Ensure virtual environment is activated
+which python  # Should show .venv/bin/python
+
+# Re-sync dependencies
+uv sync
+
+# Restart Jupyter
+uv run jupyter notebook
+```
 
 ---
 
