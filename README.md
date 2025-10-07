@@ -6,17 +6,18 @@ Deep research has broken out as one of the most popular agent applications. [Ope
 
 ## ⚡ Quick Start (Plug & Play)
 
-**Already have the prerequisites? Get running in 3 steps:**
+**Already have the prerequisites? Get running in 2 steps:**
 
 ```bash
-# 1. Clone and install
+# 1. Clone, install, and auto-setup
 git clone https://github.com/langchain-ai/deep_research_from_scratch
 cd deep_research_from_scratch
 uv sync
+./setup.sh
 
-# 2. Set up API keys
-cp .env.example .env
-# Edit .env and add BOTH required API keys:
+# 2. Edit .env and add your API keys
+nano .env  # or use any text editor
+# Add BOTH required keys:
 #   - TAVILY_API_KEY (get free at https://tavily.com)
 #   - GOOGLE_API_KEY (get at https://aistudio.google.com/app/apikey)
 
@@ -26,7 +27,9 @@ uv run langgraph dev --allow-blocking
 
 Then open **https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024** to use the research system.
 
-> **Note:** All source code is pre-generated and committed. No need to run notebooks unless you want to modify the system.
+> **Note:**
+> - `setup.sh` automatically creates `.env` and installs Jupyter kernel
+> - All source code is pre-generated - no need to run notebooks unless you want to learn internals
 
 ---
 
