@@ -4,6 +4,30 @@ Deep research has broken out as one of the most popular agent applications. [Ope
 
 ![overview](https://github.com/user-attachments/assets/b71727bd-0094-40c4-af5e-87cdb02123b4)
 
+## ⚡ Quick Start (Plug & Play)
+
+**Already have the prerequisites? Get running in 3 steps:**
+
+```bash
+# 1. Clone and install
+git clone https://github.com/langchain-ai/deep_research_from_scratch
+cd deep_research_from_scratch
+uv sync
+
+# 2. Set up API keys
+cp .env.example .env
+# Edit .env and add your GOOGLE_API_KEY (get it from https://aistudio.google.com/app/apikey)
+
+# 3. Run LangGraph Studio
+uv run langgraph dev --allow-blocking
+```
+
+Then open **https://smith.langchain.com/studio/** to use the research system.
+
+> **Note:** All source code is pre-generated and committed. No need to run notebooks unless you want to modify the system.
+
+---
+
 ## 🚀 First-Time Setup Guide
 
 Follow these steps to get the deep research system running on your machine.
