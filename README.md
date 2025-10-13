@@ -27,4 +27,4 @@ python app.py
 ```
 
 Type `exit`, `quit` or `q` to stop.
->>>>>>> 6f59623052bc4a7e55c5d30d1e9e41061fa5e751
+
