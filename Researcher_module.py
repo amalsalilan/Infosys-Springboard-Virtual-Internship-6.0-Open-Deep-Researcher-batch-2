@@ -1,7 +1,7 @@
 import os
 
-os.environ["GOOGLE_API_KEY"] = "AIzaSyB9EXiZN3gTWC8bDFq6Xb1DF8H25NYDRG8"
-os.environ["TAVILY_API_KEY"] = "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"
+os.environ["GOOGLE_API_KEY"] = "Gemini_api_key"
+os.environ["TAVILY_API_KEY"] ="Tavily_api_key"
 
 import os
 import time
@@ -211,3 +211,4 @@ while True:
 
     print(f"Bot:\n{state['response']}")
     print("-" * 80)
+
