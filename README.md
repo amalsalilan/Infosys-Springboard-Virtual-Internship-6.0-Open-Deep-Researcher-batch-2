@@ -97,6 +97,11 @@ You'll need API keys for:
 
 2. **Install dependencies**
    ```bash
+   pip install -r requirements.txt
+   ```
+   
+   Or install manually:
+   ```bash
    pip install langchain langchain-core langgraph tavily-python pydantic python-dotenv rich google-generativeai
    ```
 
@@ -194,8 +199,10 @@ Configure in `tavily_search` function:
 .
 ├── Notebooks/
 │   └── research_agent.ipynb    # Main implementation notebook
+├── .gitignore                   # Git ignore patterns
 ├── LICENSE                      # MIT License
-└── README.md                    # This file
+├── README.md                    # This file
+└── requirements.txt             # Python dependencies
 ```
 
 ## 🎨 Output Examples
