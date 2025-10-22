@@ -12,7 +12,8 @@ def analyze_user_intent(message_history: List[BaseMessage]) -> str:
     Returns:
         An empty string if the intent is clear, or a clarifying question if it's not.
     """
-    analyzer_llm = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0)
+    analyzer_llm = ChatGoogleGenerativeAI(model="gemini-2.5-flash", temperature=0)
+
 
     system_prompt = """
     You are a helpful assistant who analyzes user queries for clarity.
