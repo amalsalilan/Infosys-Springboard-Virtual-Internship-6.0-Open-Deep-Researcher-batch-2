@@ -31,7 +31,7 @@ def get_today_str() -> str:
 # Initialize model - Primary: Google Gemini | Alternatives: "openai:gpt-4.1", "anthropic:claude-sonnet-4-20250514"
 
 model = init_chat_model(
-    model="gemini-2.5-flash-lite",
+    model="gemini-2.5-pro",
     model_provider="google_genai",
     temperature=0.0
 )
