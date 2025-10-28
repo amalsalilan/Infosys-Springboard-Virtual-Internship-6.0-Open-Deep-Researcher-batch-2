@@ -1,3 +1,6 @@
-﻿{
-  "git.detectSubmodules": false
+{
+  "git.detectSubmodules": false,
+  "git.autoRepositoryDetectionExcludes": [
+    "agent-chat-ui"
+  ]
 }
