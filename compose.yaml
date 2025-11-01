@@ -23,6 +23,20 @@ services:
     networks:
       - internal
 
+  agent-ui:
+    build:
+      context: ./agent-chat-ui
+      dockerfile: Dockerfile
+    depends_on:
+      - langgraph-proxy
+    environment:
+      NEXT_PUBLIC_API_URL: http://127.0.0.1:2024
+      NEXT_PUBLIC_ASSISTANT_ID: research_agent_full
+    ports:
+      - '127.0.0.1:3001:3000'
+    networks:
+      - internal
+
 volumes:
   langgraph-checkpoints:
     external: true

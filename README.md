@@ -35,13 +35,19 @@ Follow these steps to get the researcher running with the default configuration.
    cp .env.example .env
    ```
 3. Edit `.env` and add your API keys.
-4. Build and start the containers:
+4. Create the persistent checkpoint volume:
+   ```bash
+   docker volume create langgraph-checkpoints
+   ```
+5. Build and start the containers:
    ```bash
    docker compose up --build
    ```
-5. Wait for the logs to settle, then open `http://127.0.0.1:2024` in your browser (it redirects to the API docs).
-6. Open LangGraph Studio at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
-7. When you are done, stop everything with:
+6. Wait for the logs to settle, then open:
+   - Backend API docs: `http://127.0.0.1:2024`
+   - Agent Chat UI: `http://127.0.0.1:3001`
+7. Launch LangGraph Studio at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
+8. When you are done, stop everything with:
    ```bash
    docker compose down
    ```
