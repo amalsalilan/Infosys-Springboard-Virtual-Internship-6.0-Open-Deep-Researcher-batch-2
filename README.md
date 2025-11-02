@@ -35,10 +35,14 @@ Follow these steps to get the researcher running with the default configuration.
    cp .env.example .env
    ```
 3. Edit `.env` and add your API keys.
-4. Create the persistent checkpoint volume:
+4. Create the persistent checkpoint volume (one-time):
    ```bash
    docker volume create langgraph-checkpoints
    ```
+   - This must exist before `docker compose up` because the compose file declares an external volume.
+   - Verify it exists: `docker volume ls | grep langgraph-checkpoints`
+   - Inspect (optional): `docker volume inspect langgraph-checkpoints`
+   - If you ever need to recreate it: stop containers, then `docker volume rm langgraph-checkpoints` and run the create command again.
 5. Build and start the containers:
    ```bash
    docker compose up --build
