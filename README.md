@@ -35,7 +35,13 @@ Follow these steps to get the researcher running with the default configuration.
    cp .env.example .env
    ```
 3. Edit `.env` and add your API keys.
-4. Create the persistent checkpoint volume (one-time):
+4. Initialize git submodules (one-time, required for Agent UI build):
+   ```bash
+   git submodule update --init --recursive
+   ```
+   - Verifies the Agent Chat UI submodule is present so Docker can find `agent-chat-ui/Dockerfile`.
+   - Check: `ls agent-chat-ui/Dockerfile`
+5. Create the persistent checkpoint volume (one-time):
    ```bash
    docker volume create langgraph-checkpoints
    ```
@@ -43,15 +49,15 @@ Follow these steps to get the researcher running with the default configuration.
    - Verify it exists: `docker volume ls | grep langgraph-checkpoints`
    - Inspect (optional): `docker volume inspect langgraph-checkpoints`
    - If you ever need to recreate it: stop containers, then `docker volume rm langgraph-checkpoints` and run the create command again.
-5. Build and start the containers:
+6. Build and start the containers:
    ```bash
    docker compose up --build
    ```
-6. Wait for the logs to settle, then open:
+7. Wait for the logs to settle, then open:
    - Backend API docs: `http://127.0.0.1:2024`
    - Agent Chat UI: `http://127.0.0.1:3001`
-7. Launch LangGraph Studio at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
-8. When you are done, stop everything with:
+8. Launch LangGraph Studio at `https://smith.langchain.com/studio/?baseUrl=http://127.0.0.1:2024`.
+9. When you are done, stop everything with:
    ```bash
    docker compose down
    ```
