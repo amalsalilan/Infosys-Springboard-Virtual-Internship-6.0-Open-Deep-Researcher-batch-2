@@ -22,6 +22,7 @@ node_modules/
 notebooks/
 output.png
 README_WORKFLOW.md
+agent-chat-ui/
 .env
 .env.*
 *.sh
